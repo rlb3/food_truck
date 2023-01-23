@@ -27,6 +27,12 @@ trucks =
   |> Enum.map(fn line -> Enum.zip(headers, line) end)
   |> Enum.map(fn line -> Enum.into(line, %{}) end)
 
+
+@doc """
+  Seeds the database with data from the CSV file.
+  There is more data in the CSV file, for a proof
+  of concept we are only using a subset of the data.
+  """
 for truck <- trucks do
   FoodTruck.Repo.insert!(%FoodTruck.Trucks{
     applicant: truck["Applicant"],
