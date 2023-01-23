@@ -20,8 +20,30 @@ defmodule FoodTruck.Trucks do
   @doc false
   def changeset(trucks, attrs) do
     trucks
-    |> cast(attrs, [:applicant, :facility_type, :location_description, :address, :status, :food_items, :schedule])
-    |> validate_required([:applicant, :facility_type, :location_description, :address, :status, :food_items, :schedule])
+    |> cast(attrs, [
+      :applicant,
+      :facility_type,
+      :location_description,
+      :address,
+      :status,
+      :food_items,
+      :schedule
+    ])
+    |> validate_required([
+      :applicant,
+      :facility_type,
+      :location_description,
+      :address,
+      :status,
+      :food_items,
+      :schedule
+    ])
+  end
+
+  def create_truck(attrs \\ %{}) do
+    %FoodTruck.Trucks{}
+    |> changeset(attrs)
+    |> FoodTruck.Repo.insert()
   end
 
   @doc """
@@ -30,26 +52,29 @@ defmodule FoodTruck.Trucks do
   simple case-insensitive match on the food type and truck name.
   """
   def search(params) do
-    search = Enum.reduce(params, dynamic(true), fn
-      {_, ""}, dynamic ->
-        dynamic
+    search =
+      Enum.reduce(params, dynamic(true), fn
+        {_, ""}, dynamic ->
+          dynamic
 
-      {"food_type", food_type}, dynamic ->
-        food_type_match = "%#{food_type}%"
-        dynamic([t], ilike(t.food_items, ^food_type_match))
+        {"food_type", food_type}, dynamic ->
+          food_type_match = "%#{food_type}%"
+          dynamic([t], ilike(t.food_items, ^food_type_match))
 
-      {"truck_name", truck_name}, dynamic ->
-        truck_name_match = "%#{truck_name}%"
-        dynamic([t], ilike(t.applicant, ^truck_name_match))
+        {"truck_name", truck_name}, dynamic ->
+          truck_name_match = "%#{truck_name}%"
+          dynamic([t], ilike(t.applicant, ^truck_name_match))
 
-      {_, _}, dynamic ->
-        dynamic
-    end)
+        {_, _}, dynamic ->
+          dynamic
+      end)
 
-    query = from t in __MODULE__,
-      where: t.status == "APPROVED",
-      where: t.facility_type == "Truck",
-      where: ^search
+    query =
+      from t in __MODULE__,
+        where: t.status == "APPROVED",
+        where: t.facility_type == "Truck",
+        where: ^search
+
     FoodTruck.Repo.all(query)
   end
 end
